@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () =>{
 
     const locationInput = document.getElementById("location-input");
-    const searchButton = document.getElementById("search-button");
+    const locationForm = document.getElementById("location-form");
     const weatherInformation = document.getElementById("weather-info");
 
     async function fetchWeatherData(location){
@@ -17,13 +17,30 @@ document.addEventListener('DOMContentLoaded', () =>{
         }
     }
 
-    function displayData(data){
+    function extractWeatherData(data){
         if(data){
-            const temperatureCelsius = data.main.temp - 273.15; 
+            return {
+                location : data.name,
+                temperature : (data.main.temp-273.15).toFixed(2),
+                description : data.weather[0].description,
+                feelslike : (data.main.feels_like - 273.15).toFixed(2),
+                humidity : data.main.humidity,
+                windspeed : (data.wind.speed * 3.6).toFixed(1)
+            };
+        }else{
+            return null;
+        }
+    }
+
+    function displayData(data){
+        if(data){ 
             weatherInformation.innerHTML=`
-            <h2> Weather in ${data.name}</h2>
-            <p>Temperature: ${temperatureCelsius.toFixed(2)} °C</p>
-            <p> Weather: ${data.weather[0].description} <p>
+            <h2>${data.location}</h2>
+            <p>Temperature: ${data.temperature} °C</p>
+            <p> Weather: ${data.description} <p>
+            <p> Feels Like: ${data.feelslike} °C</p>
+            <p> Humidity : ${data.humidity} % </p>
+            <p> Wind Speed : ${data.windspeed} km/h <p>
             `
         }
         else{
@@ -31,9 +48,11 @@ document.addEventListener('DOMContentLoaded', () =>{
         }
     };
 
-    searchButton.addEventListener('click', async () =>{
+    locationForm.addEventListener('submit', async (event) =>{
+        event.preventDefault();
         const location = locationInput.value;
         const weatherData = await fetchWeatherData(location);
-        displayData(weatherData);
+        const extractData = extractWeatherData(weatherData);
+        displayData(extractData);
     });
 });
